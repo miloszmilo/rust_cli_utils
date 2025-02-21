@@ -65,12 +65,58 @@ fn ls(path: &str) -> Result<ReadDir, Error> {
     Ok(paths)
 }
 
-fn find() {
-    todo!();
+fn find(search_path: &str, target_name: &str) -> Result<ReadDir, Error> {
+    let current_dir = Path::new(search_path);
+
+    let paths = fs::read_dir(current_dir).unwrap();
+
+    for dir in fs::read_dir(current_dir).unwrap() {
+        let found_dir = dir.unwrap().path();
+        let name_of_found_dir = found_dir.to_string_lossy().to_owned();
+        match name_of_found_dir == target_name {
+            true => {
+                println!("{}", name_of_found_dir);
+            }
+            false => {
+                if found_dir.is_dir() {
+                    let _ = find(&name_of_found_dir, target_name);
+                } else {
+                    return Ok(paths);
+                }
+            }
+        }
+    }
+
+    Ok(paths)
 }
 
-fn grep() {
-    todo!();
+/*
+* get chunk of text
+* search from start to end of line
+* if found match, print that line
+* else continue
+*/
+fn grep<'a>(text: &'a str, search_text: &'a str) -> Result<Vec<&'a str>, Error> {
+    if text.is_empty() {
+        let err = Error::new(
+            std::io::ErrorKind::DirectoryNotEmpty,
+            "Text to search is empty.",
+        );
+        return Err(err);
+    }
+
+    if search_text.is_empty() {
+        let err = Error::new(std::io::ErrorKind::DirectoryNotEmpty, "Pattern is empty.");
+        return Err(err);
+    }
+
+    let lines: Vec<&str> = text.split("\n").collect();
+    for line in &lines {
+        if line.contains(search_text) {
+            println!("{}", line);
+        }
+    }
+    Ok(lines)
 }
 
 #[cfg(test)]
@@ -130,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn gigabyte_cat() {
+    fn bench_gigabyte_cat() {
         let path = "./test_files/1gb.txt";
         let result = cat(path).unwrap();
         let mut expected = String::new();
@@ -162,5 +208,47 @@ mod tests {
         if let Err(e) = result {
             assert_eq!(e.kind(), std::io::ErrorKind::NotFound);
         }
+    }
+
+    #[test]
+    fn simple_find() {
+        let path = "lib.rs";
+        let result = find("./", path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn complex_find() {
+        let path = "lib.rs";
+        let result = find("/home/nxtperfect/", path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn non_existing_find() {
+        let path = "library.rs";
+        let result = find("./", path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn complex_non_existing_find() {
+        let path = "library.rs.non.existant";
+        let result = find("/home/nxtperfect/", path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn simple_grep() {
+        let text = "fn simple_grep()";
+        let result = grep("fn simple_grep()", text);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn complex_grep() {
+        let text = "a";
+        let result = grep("a\na\na\na\nb\na\nb\na", text);
+        assert!(result.is_ok());
     }
 }
