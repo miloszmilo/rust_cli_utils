@@ -1,8 +1,33 @@
+use clap::{Parser, Subcommand};
 use std::fs::{self, File, ReadDir};
 use std::io::{prelude::*, Error};
 use std::path::Path;
 
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(short, long)]
+    function: String,
+
+    #[arg(short, long)]
+    source: String,
+
+    #[arg(short, long)]
+    pattern: String,
+}
+
+fn main() {
+    let args = Args::parse();
+    match args.function {
+        // for each match run function
+        // if missing param, send err
+        _ => todo!(),
+    }
+    // let matches = App::new("cli_utils").get_matches();
+}
+
 fn echo(text: &str) {
+    assert!(text.len() > 0);
     println!("{text}");
 }
 
@@ -90,12 +115,6 @@ fn find(search_path: &str, target_name: &str) -> Result<ReadDir, Error> {
     Ok(paths)
 }
 
-/*
-* get chunk of text
-* search from start to end of line
-* if found match, print that line
-* else continue
-*/
 fn grep<'a>(text: &'a str, search_text: &'a str) -> Result<Vec<&'a str>, Error> {
     if text.is_empty() {
         let err = Error::new(
