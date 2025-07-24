@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::fs::{self, File, ReadDir};
+use std::fs::File;
 use std::io::{prelude::*, Error};
 use std::path::Path;
 
@@ -67,29 +67,6 @@ fn cat(path: &str) -> Result<String, Error> {
     Ok(content)
 }
 
-fn ls(path: &str) -> Result<ReadDir, Error> {
-    let file_path = Path::new(path);
-
-    if !file_path.exists() {
-        let err = Error::new(std::io::ErrorKind::NotFound, "File doesn't exist.");
-        return Err(err);
-    }
-
-    if !file_path.is_dir() {
-        let err = Error::new(
-            std::io::ErrorKind::NotADirectory,
-            "Expected directory, got file path.",
-        );
-        panic!("{err}");
-    }
-    let paths = fs::read_dir(file_path).unwrap();
-
-    for dir in fs::read_dir(file_path).unwrap() {
-        println!("{}", dir.unwrap().path().display());
-    }
-    Ok(paths)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -153,31 +130,5 @@ mod tests {
         let mut expected = String::new();
         let _ = File::open(path).unwrap().read_to_string(&mut expected);
         assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn simple_ls() {
-        let path = "./";
-        let mut expected: Vec<String> = fs::read_dir(path)
-            .unwrap()
-            .map(|dir| dir.unwrap().path().display().to_string())
-            .collect();
-        let mut res_dirs: Vec<String> = ls(path)
-            .unwrap()
-            .map(|dir| dir.unwrap().path().display().to_string())
-            .collect();
-        res_dirs.sort();
-        expected.sort();
-        assert_eq!(res_dirs, expected);
-    }
-
-    #[test]
-    fn non_existing_ls() {
-        let path = "./does/not/exist/path";
-        let result = ls(path);
-        assert!(result.is_err());
-        if let Err(e) = result {
-            assert_eq!(e.kind(), std::io::ErrorKind::NotFound);
-        }
     }
 }
