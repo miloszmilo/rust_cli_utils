@@ -15,5 +15,9 @@ path = "src/find.rs"
 name = "ls"
 path = "src/ls.rs"
 
+[[bin]]
+name = "cat"
+path = "src/cat.rs"
+
 [dependencies]
 clap = { version = "4.5.30", features = ["derive"] }
