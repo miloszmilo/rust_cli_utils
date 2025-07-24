@@ -3,5 +3,13 @@ name = "cli_util"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "grep"
+path = "src/grep.rs"
+
+[[bin]]
+name = "find"
+path = "src/find.rs"
+
 [dependencies]
 clap = { version = "4.5.30", features = ["derive"] }
